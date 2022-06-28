@@ -1763,7 +1763,7 @@ class DmailController extends MainController
                 }
                 $out .= '<tr>';
                 $out .= '<td valign="top" width="75%">' . $this->iconFactory->getIconForRecord('tt_content', $row, Icon::SIZE_SMALL) .
-                    $row['header'] . '<br />' . GeneralUtility::fixed_lgd_cs(strip_tags($row['bodytext']), 200) . '<br /></td>';
+                    $row['header'] . '<br />' . (!empty($row['bodytext']) ? GeneralUtility::fixed_lgd_cs(strip_tags($row['bodytext']), 200): '') . '<br /></td>';
 
                 $out .= '<td nowrap valign="top">';
                 $checkBox = '';
