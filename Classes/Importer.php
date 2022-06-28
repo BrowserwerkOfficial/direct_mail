@@ -710,7 +710,7 @@ class Importer
                 )
                 ->execute();
 
-            while (($row = $statement->fetch())) {
+            while (($row = $statement->fetchNumeric())) {
                 $user[] = $row[1];
                 $userID[] = $row[0];
             }
