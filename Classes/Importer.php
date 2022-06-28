@@ -1087,7 +1087,7 @@ class Importer
         if (empty($this->indata['newFile'])) {
             // new file
             $file['newfile']['1']['target']=$this->userTempFolder();
-            $file['newfile']['1']['data']='import_' . $GLOBALS['EXEC_TIME'] . '.txt';
+            $file['newfile']['1']['data']='import_' . GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp') . '.txt';
             if ($httpHost != $refInfo['host'] && !$GLOBALS['TYPO3_CONF_VARS']['SYS']['doNotCheckReferer']) {
                 $this->fileProcessor->writeLog(0, 2, 1, 'Referer host "%s" and server host "%s" did not match!', [$refInfo['host'], $httpHost]);
             } else {
@@ -1125,7 +1125,7 @@ class Importer
         $tempFolder = $this->userTempFolder();
         $array = explode('/', trim($tempFolder, '/'));
         $fm = [
-            $GLOBALS['EXEC_TIME'] => [
+            GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp') => [
                 'path' => $tempFolder,
                 'name' => array_pop($array) .  '/',
             ]

@@ -291,6 +291,6 @@ class AnalyzeBounceMail extends AbstractTask
     }
     
     private function getEXEC_TIME() {
-        return $GLOBALS['EXEC_TIME'];
+        return GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp');
     }
 }
