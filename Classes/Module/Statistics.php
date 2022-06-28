@@ -828,8 +828,8 @@ class Statistics extends BaseScriptClass
                     // Drop a tags without href
                     continue;
                 }
-                
-                if (GeneralUtility::isFirstPartOfStr($url, 'mailto:')) {
+
+                if (str_starts_with($url, 'mailto:')) {
                     // Drop mail links
                     continue;
                 }

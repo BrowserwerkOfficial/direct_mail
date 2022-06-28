@@ -596,8 +596,8 @@ class StatisticsController extends MainController
                     // Drop a tags without href
                     continue;
                 }
-                
-                if (GeneralUtility::isFirstPartOfStr($url, 'mailto:')) {
+
+                if (str_starts_with($url, 'mailto:')) {
                     // Drop mail links
                     continue;
                 }
