@@ -1504,4 +1504,179 @@ class StatisticsController extends MainController
             );
         }
     }
+
+    /**
+     * This method returns the label for a specified URL.
+     * If the page is local and contains a fragment it returns the label of the content element linked to.
+     * In any other case it simply fetches the page and extracts the <title> tag content as label
+     *
+     * @param string $url The statistics click-URL for which to return a label
+     * @param string $urlStr  A processed variant of the url string. This could get appended to the label???
+     * @param bool $forceFetch When this parameter is set to true the "fetch and extract <title> tag" method will get used
+     * @param string $linkedWord The word to be linked
+     *
+     * @return string The label for the passed $url parameter
+     */
+    public function getLinkLabel($url, $urlStr, $forceFetch = false, $linkedWord = '')
+    {
+        $pathSite = $this->getBaseURL();
+        $label = $linkedWord;
+        $contentTitle = '';
+
+        $urlParts = parse_url($url);
+        if (!$forceFetch && (substr($url, 0, strlen($pathSite)) === $pathSite)) {
+            if ($urlParts['fragment'] && (substr($urlParts['fragment'], 0, 1) == 'c')) {
+                // linking directly to a content
+                $elementUid = intval(substr($urlParts['fragment'], 1));
+                $row = BackendUtility::getRecord('tt_content', $elementUid);
+                if ($row) {
+                    $contentTitle = BackendUtility::getRecordTitle('tt_content', $row, false, true);
+                }
+            } else {
+                //$contentTitle = $this->getLinkLabel($url, $urlStr, true);
+            }
+        } else {
+            if (empty($urlParts['host']) && (substr($url, 0, strlen($pathSite)) !== $pathSite)) {
+                // it's internal
+                $url = $pathSite . $url;
+            }
+
+            $content = GeneralUtility::getURL($url);
+            if (is_string($content) && preg_match('/\<\s*title\s*\>(.*)\<\s*\/\s*title\s*\>/i', $content, $matches)) {
+                // get the page title
+                $contentTitle = GeneralUtility::fixed_lgd_cs(trim($matches[1]), 50);
+            } else {
+                // file?
+                $file = GeneralUtility::split_fileref($url);
+                $contentTitle = $file['file'];
+            }
+        }
+
+        if ($this->params['showContentTitle'] == 1) {
+            $label = $contentTitle;
+        }
+
+        if ($this->params['prependContentTitle'] == 1) {
+            $label =  $contentTitle . ' (' . $linkedWord . ')';
+        }
+
+        if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXT']['directmail']['getLinkLabel'])) {
+            foreach ($GLOBALS['TYPO3_CONF_VARS']['EXT']['directmail']['getLinkLabel'] as $funcRef) {
+                $params = array('pObj' => &$this, 'url' => $url, 'urlStr' => $urlStr, 'label' => $label);
+                $label = GeneralUtility::callUserFunction($funcRef, $params, $this);
+            }
+        }
+
+        // Fallback to url
+        if ($label === '') {
+            $label = $url;
+        }
+
+        if (isset($this->params['maxLabelLength']) && ($this->params['maxLabelLength'] > 0)) {
+            $label = GeneralUtility::fixed_lgd_cs($label, $this->params['maxLabelLength']);
+        }
+
+        return $label;
+    }
+
+
+    /**
+     * Generates a string for the URL
+     *
+     * @param array $urlParts The parts of the URL
+     *
+     * @return string The URL string
+     */
+    public function getUrlStr(array $urlParts)
+    {
+        $baseUrl = $this->getBaseURL();
+
+        if (is_array($urlParts) && GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY') == $urlParts['host']) {
+            $m = [];
+            // do we have an id?
+            if (preg_match('/(?:^|&)id=([0-9a-z_]+)/', $urlParts['query'], $m)) {
+                $isInt = MathUtility::canBeInterpretedAsInteger($m[1]);
+                if ($isInt) {
+                    $uid = intval($m[1]);
+                } else {
+                    $uid = $this->getPageIdFromAlias($m[1]);
+                }
+                $rootLine = BackendUtility::BEgetRootLine($uid);
+                $pages = array_shift($rootLine);
+                // array_shift reverses the array (rootline has numeric index in the wrong order!)
+                $rootLine = array_reverse($rootLine);
+                $query = preg_replace('/(?:^|&)id=([0-9a-z_]+)/', '', $urlParts['query']);
+                $urlstr = GeneralUtility::fixed_lgd_cs($pages['title'], 50) . GeneralUtility::fixed_lgd_cs(($query ? ' / ' . $query : ''), 20);
+            } else {
+                $urlstr = $baseUrl . substr($urlParts['path'], 1);
+                $urlstr .= $urlParts['query'] ? '?' . $urlParts['query'] : '';
+                $urlstr .= $urlParts['fragment'] ? '#' . $urlParts['fragment'] : '';
+            }
+        } else {
+            $urlstr =  ($urlParts['host'] ? $urlParts['scheme'] . '://' . $urlParts['host'] : $baseUrl) . $urlParts['path'];
+            $urlstr .= $urlParts['query'] ? '?' . $urlParts['query'] : '';
+            $urlstr .= $urlParts['fragment'] ? '#' . $urlParts['fragment'] : '';
+        }
+
+        return $urlstr;
+    }
+
+    /**
+     * Get baseURL of the FE
+     * force http if UseHttpToFetch is set
+     *
+     * @return string the baseURL
+     */
+    public function getBaseURL()
+    {
+        $baseUrl = GeneralUtility::getIndpEnv('TYPO3_SITE_URL');
+
+        # if fetching the newsletter using http, set the url to http here
+        if ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['direct_mail']['UseHttpToFetch'] == 1) {
+            $baseUrl = str_replace('https', 'http', $baseUrl);
+        }
+
+        return $baseUrl;
+    }
+
+    /**
+     * Returns a pagerow for the page with alias $alias
+     * Taken from TYPO3 9 TYPO3\CMS\Frontend\Page\PageRepository - has been deprecated
+     *
+     * @param string $alias The alias to look up the page uid for.
+     * @return int Returns page uid (int) if found, otherwise 0 (zero)
+     * @see \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController::checkAndSetAlias(), ContentObjectRenderer::typoLink()
+     */
+    public function getPageIdFromAlias($alias)
+    {
+        $alias = strtolower($alias);
+        $cacheIdentifier = 'PageRepository_getPageIdFromAlias_' . md5($alias);
+        $cache = $this->getRuntimeCache();
+        $cacheEntry = $cache->get($cacheIdentifier);
+        if ($cacheEntry !== false) {
+            return $cacheEntry;
+        }
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('pages');
+        $queryBuilder->getRestrictions()
+            ->removeAll()
+            ->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+
+        $row = $queryBuilder->select('uid')
+            ->from('pages')
+            ->where(
+                $queryBuilder->expr()->eq('alias', $queryBuilder->createNamedParameter($alias, \PDO::PARAM_STR)),
+                // "AND pid>=0" because of versioning (means that aliases sent MUST be online!)
+                $queryBuilder->expr()->gte('pid', $queryBuilder->createNamedParameter(0, \PDO::PARAM_INT))
+            )
+            ->setMaxResults(1)
+            ->execute()
+            ->fetchAssociative();
+
+        if ($row) {
+            $cache->set($cacheIdentifier, $row['uid']);
+            return $row['uid'];
+        }
+        $cache->set($cacheIdentifier, 0);
+        return 0;
+    }
 }
