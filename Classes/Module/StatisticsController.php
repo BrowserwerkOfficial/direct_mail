@@ -1536,7 +1536,7 @@ class StatisticsController extends MainController
                     $contentTitle = BackendUtility::getRecordTitle('tt_content', $row, false, true);
                 }
             } else {
-                //$contentTitle = $this->getLinkLabel($url, $urlStr, true);
+                $contentTitle = $this->getLinkLabel($url, $urlStr, true);
             }
         } else {
             if (empty($urlParts['host']) && (substr($url, 0, strlen($pathSite)) !== $pathSite)) {
