@@ -106,7 +106,6 @@ class StatisticsController extends MainController
     public function indexAction(ServerRequestInterface $request) : ResponseInterface
     {
         $this->view = $this->configureTemplatePaths('Statistics');
-        $this->pageRenderer->addCssInlineBlock('DMStatistics', $this->getInlineCSS(), false, true);
         
         $this->init($request);
         $this->initStatistics($request);
@@ -147,16 +146,6 @@ class StatisticsController extends MainController
          */
         $this->moduleTemplate->setContent($this->view->render());
         return new HtmlResponse($this->moduleTemplate->renderContent());
-    }
-    
-    private function getInlineCSS() {
-        return '
-		a.bubble {position:relative; z-index:24; color:#000; text-decoration:none}
-		a.bubble:hover {z-index:25; background-color: #e6e8ea;}
-		a.bubble span.help {display: none;}
-		a.bubble:hover span.help {display:block; position:absolute; top:2em; left:2em; width:25em; border:1px solid #0cf; background-color:#cff; padding: 2px;}
-		td { vertical-align: top; }
-		';
     }
     
     protected function moduleContent()
@@ -642,8 +631,8 @@ class StatisticsController extends MainController
             
             $label = $this->getLinkLabel($url, $urlstr, false, $htmlLinks[$id]['label']);
             
-            $img = '<a href="' . $urlstr . '" target="_blank">' .  $iconAppsToolbarMenuSearch . '</a>';
             
+            $img = '<a href="' . $urlstr . '" target="_blank" class="btn btn-default">' .  $iconAppsToolbarMenuSearch . '</a>';
             if (isset($urlCounter['html'][$id]['plainId'])) {
                 $tblLines[] = [
                     $label,
@@ -738,7 +727,7 @@ class StatisticsController extends MainController
             ['getAttr' => 'returnCSV', 'lang' => 'stats_CSV_returned', 'icon' => $csvIcons]
         ];
 
-        $iconsMailReturned = $this->createBubbleLinks($thisurl, $iconConfs);
+        $iconsMailReturned = $this->createIconLinks($thisurl, $iconConfs);
 
         // Icons unknown recip
         $iconConfs = [
@@ -746,36 +735,36 @@ class StatisticsController extends MainController
             ['getAttr' => 'unknownDisable', 'lang' => 'stats_disable_returned_unknown_recipient', 'icon' => $hideIcons],
             ['getAttr' => 'unknownCSV', 'lang' => 'stats_CSV_returned_unknown_recipient', 'icon' => $csvIcons]
         ];
-        
-        $iconsUnknownRecip = $this->createBubbleLinks($thisurl, $iconConfs);
-        
+
+        $iconsUnknownRecip = $this->createIconLinks($thisurl, $iconConfs);
+
         // Icons mailbox full
         $iconConfs = [
             ['getAttr' => 'fullList', 'lang' => 'stats_list_returned_mailbox_full', 'icon' => $listIcons],
             ['getAttr' => 'fullDisable', 'lang' => 'stats_disable_returned_mailbox_full', 'icon' => $hideIcons],
             ['getAttr' => 'fullCSV', 'lang' => 'stats_CSV_returned_mailbox_full', 'icon' => $csvIcons]
         ];
-        
-        $iconsMailbox = $this->createBubbleLinks($thisurl, $iconConfs);
-        
+
+        $iconsMailbox = $this->createIconLinks($thisurl, $iconConfs);
+
         // Icons bad host
         $iconConfs = [
             ['getAttr' => 'badHostList', 'lang' => 'stats_list_returned_bad_host', 'icon' => $listIcons],
             ['getAttr' => 'badHostDisable', 'lang' => 'stats_disable_returned_bad_host', 'icon' => $hideIcons],
             ['getAttr' => 'badHostCSV', 'lang' => 'stats_CSV_returned_bad_host', 'icon' => $csvIcons]
         ];
-        
-        $iconsBadhost = $this->createBubbleLinks($thisurl, $iconConfs);
-        
-        // Icons bad header        
+
+        $iconsBadhost = $this->createIconLinks($thisurl, $iconConfs);
+
+        // Icons bad header
         $iconConfs = [
             ['getAttr' => 'badHeaderList', 'lang' => 'stats_list_returned_bad_header', 'icon' => $listIcons],
             ['getAttr' => 'badHeaderDisable', 'lang' => 'stats_disable_returned_bad_header', 'icon' => $hideIcons],
             ['getAttr' => 'badHeaderCSV', 'lang' => 'stats_CSV_returned_bad_header', 'icon' => $csvIcons]
         ];
-        
-        $iconsBadheader = $this->createBubbleLinks($thisurl, $iconConfs);
-        
+
+        $iconsBadheader = $this->createIconLinks($thisurl, $iconConfs);
+
         // Icons unknown reasons
         // TODO: link to show all reason
         $iconConfs = [
@@ -783,10 +772,10 @@ class StatisticsController extends MainController
             ['getAttr' => 'reasonUnknownDisable', 'lang' => 'stats_disable_returned_reason_unknown', 'icon' => $hideIcons],
             ['getAttr' => 'reasonUnknownCSV', 'lang' => 'stats_CSV_returned_reason_unknown', 'icon' => $csvIcons]
         ];
-        
-        $iconsUnknownReason = $this->createBubbleLinks($thisurl, $iconConfs);
-        
-        // Table with Icon        
+
+        $iconsUnknownReason = $this->createIconLinks($thisurl, $iconConfs);
+
+        // Table with Icon
         $responseResult = GeneralUtility::makeInstance(SysDmailMaillogRepository::class)->countReturnCode($row['uid']);
         $responseResult = $this->changekeyname($responseResult, 'counter', 'COUNT(*)');
 
@@ -798,32 +787,32 @@ class StatisticsController extends MainController
                 [
                     'stats_total_mails_returned',
                     number_format(intval($table['-127']['counter'] ?? 0)),
-                    implode('&nbsp;', $iconsMailReturned)
+                    '<div class="btn-group">' . implode('', $iconsMailReturned) . '</div>'
                 ],
                 [
                     'stats_recipient_unknown',
                     $this->showWithPercent(($responseResult['550']['counter'] ?? 0) + ($responseResult['553']['counter'] ?? 0), ($table['-127']['counter'] ?? 0)),
-                    implode('&nbsp;', $iconsUnknownRecip)
+                    '<div class="btn-group">' . implode('', $iconsUnknownRecip) . '</div>'
                 ],
                 [
                     'stats_mailbox_full',
                     $this->showWithPercent(($responseResult['551']['counter'] ?? 0), ($table['-127']['counter'] ?? 0)),
-                    implode('&nbsp;', $iconsMailbox)
+                    '<div class="btn-group">' . implode('', $iconsMailbox) . '</div>'
                 ],
                 [
                     'stats_bad_host',
                     $this->showWithPercent(($responseResult['552']['counter'] ?? 0), ($table['-127']['counter'] ?? 0)),
-                    implode('&nbsp;', $iconsBadhost)
+                    '<div class="btn-group">' . implode('', $iconsBadhost) . '</div>'
                 ],
                 [
                     'stats_error_in_header',
                     $this->showWithPercent(($responseResult['554']['counter'] ?? 0), ($table['-127']['counter'] ?? 0)),
-                    implode('&nbsp;', $iconsBadheader)
+                    '<div class="btn-group">' . implode('', $iconsBadheader) . '</div>'
                 ],
                 [
                     'stats_reason_unkown',
                     $this->showWithPercent(($responseResult['-1']['counter'] ?? 0), ($table['-127']['counter'] ?? 0)),
-                    implode('&nbsp;', $iconsUnknownReason)
+                    '<div class="btn-group">' . implode('', $iconsUnknownReason) . '</div>'
                 ]
             ]
         ]; 
@@ -1200,13 +1189,13 @@ class StatisticsController extends MainController
 
         return $idLists;
     }
-    
-    private function createBubbleLinks($url, array $iconConfs): array
+
+    private function createIconLinks($url, array $iconConfs): array
     {
         $res = [];
         if(count($iconConfs)) {
             foreach($iconConfs as $iconConf) {
-                $res[] = '<a href="' . $url . '&' . $iconConf['getAttr'] . '=1" class="bubble"><span class="help" title="' . $this->getLanguageService()->getLL($iconConf['lang']) . '"> ' . $iconConf['icon'] . '</span></a>';
+                $res[] = '<a href="' . $url . '&' . $iconConf['getAttr'] . '=1" class="btn btn-default" title="' . $this->getLanguageService()->getLL($iconConf['lang']) . '"><span class="t3js-icon icon icon-size-small icon-state-default"> ' . $iconConf['icon'] . '</span></a>';
             }
         }
         return $res;
