@@ -116,15 +116,20 @@ class SysDmailMaillogRepository extends MainRepository {
      */
     public function countSysDmailMaillogsResponseTypeByMid(int $uid) //: array|bool 
     {
-        $queryBuilder = $this->getQueryBuilder($this->table);
+        $responseTypes = [];
         
-        return $queryBuilder->count('*')
+        $result = $this->getQueryBuilder($this->table)->count('*')
             ->addSelect('response_type')
             ->from($this->table)
             ->add('where', 'mid = ' . intval($uid))
             ->groupBy('response_type')
-            ->execute()
-            ->fetchAll();
+            ->executeQuery();
+
+        while ($row = $result->fetchAssociative()) {
+            $responseTypes[$row['response_type']] = $row;
+        }
+
+        return $responseTypes;
     }
     
     /**
@@ -194,17 +199,21 @@ class SysDmailMaillogRepository extends MainRepository {
      */
     public function countReturnCode(int $uid, int $responseType = -127) //: array|bool 
     {
-        $queryBuilder = $this->getQueryBuilder($this->table);
-        
-        return $queryBuilder->count('*')
+        $returnCodes = [];
+        $result = $this->getQueryBuilder($this->table)->count('*')
         ->addSelect('return_code')
         ->from($this->table)
         ->add('where', 'mid=' . intval($uid) .
             ' AND response_type = '. intval($responseType))
         ->groupBy('return_code')
         ->orderBy('COUNT(*)')
-        ->execute()
-        ->fetchAll();
+        ->executeQuery();
+
+        while ($row = $result->fetchAssociative()) {
+            $returnCodes[$row['return_code']] = $row;
+        }
+
+        return $returnCodes;
     }
     
     /**
