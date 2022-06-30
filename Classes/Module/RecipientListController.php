@@ -3,23 +3,20 @@ declare(strict_types=1);
 
 namespace DirectMailTeam\DirectMail\Module;
 
+use DirectMailTeam\DirectMail\DirectMailUtility;
 use DirectMailTeam\DirectMail\Importer;
 use DirectMailTeam\DirectMail\MailSelect;
+use DirectMailTeam\DirectMail\Repository\FeUsersRepository;
+use DirectMailTeam\DirectMail\Repository\SysDmailGroupRepository;
+use DirectMailTeam\DirectMail\Repository\TtAddressRepository;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Imaging\Icon;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Fluid\View\StandaloneView;
 use TYPO3\CMS\Core\Utility\CsvUtility;
-use DirectMailTeam\DirectMail\DirectMailUtility;
-use DirectMailTeam\DirectMail\Repository\SysDmailGroupRepository;
-use DirectMailTeam\DirectMail\Repository\FeUsersRepository;
-use DirectMailTeam\DirectMail\Repository\TtAddressRepository;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class RecipientListController extends MainController
 {
