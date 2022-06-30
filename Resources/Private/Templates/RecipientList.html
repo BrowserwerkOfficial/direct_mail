@@ -104,8 +104,21 @@
         <a class="t3-link" href="{data.moduleUrl}"> <f:translate key="{lll}recip_import_mailgroup_msg" /></a>
     </f:if>
     <f:if condition="{formcontent}">
-        <f:format.raw>{formcontent}</f:format.raw>
+        <f:if condition="{type} == 3">
+            <f:then>
+                <f:render section="RecipientImportForm" arguments="{_all}"/>
+            </f:then>
+            <f:else>
+                <f:format.raw>{formcontent}</f:format.raw>
+            </f:else>
+        </f:if>
     </f:if>
 
 </f:if>
+</f:section>
+
+<f:section name="RecipientImportForm">
+    <f:form actionUri="" method="post" name="dmailform" enctype="multipart/form-data">
+        <f:format.raw>{formcontent}</f:format.raw>
+    </f:form>
 </f:section>
