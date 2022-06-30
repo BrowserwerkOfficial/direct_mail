@@ -14,6 +14,7 @@ namespace DirectMailTeam\DirectMail;
  * The TYPO3 project - inspiring people to share!
  */
 
+use DirectMailTeam\DirectMail\Module\RecipientListController;
 use DirectMailTeam\DirectMail\Module\RecipientList;
 use TYPO3\CMS\Core\Charset\CharsetConverter;
 use TYPO3\CMS\Core\Core\Environment;
@@ -47,7 +48,7 @@ class Importer
     /**
      * Parent object
      *
-     * @var RecipientList
+     * @var RecipientListController
      */
     public $parent;
 
@@ -358,7 +359,7 @@ class Importer
                 // header
                 $tblLinesAdd[] = [$this->getLanguageService()->getLL('mailgroup_import_mapping_all_html'), '<input type="checkbox" name="CSV_IMPORT[all_html]" value="1"' . (!$this->indata['all_html']?'':' checked="checked"') . '/> '];
                 // get categories
-                $temp['value'] = BackendUtility::getPagesTSconfig($this->parent->id)['TCEFORM.']['sys_dmail_group.']['select_categories.']['PAGE_TSCONFIG_IDLIST'] ?? null;
+                $temp['value'] = BackendUtility::getPagesTSconfig($this->parent->getId())['TCEFORM.']['sys_dmail_group.']['select_categories.']['PAGE_TSCONFIG_IDLIST'] ?? null;
                 if (is_numeric($temp['value'])) {
                     $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('sys_dmail_category');
                     $rowCat = $queryBuilder
