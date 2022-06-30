@@ -15,6 +15,7 @@ namespace DirectMailTeam\DirectMail;
  */
 
 use DirectMailTeam\DirectMail\Module\RecipientListController;
+use TYPO3\CMS\Core\Context\Context;
 use DirectMailTeam\DirectMail\Module\RecipientList;
 use TYPO3\CMS\Core\Charset\CharsetConverter;
 use TYPO3\CMS\Core\Core\Environment;
