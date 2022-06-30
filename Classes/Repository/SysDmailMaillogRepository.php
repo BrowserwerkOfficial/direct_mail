@@ -148,17 +148,22 @@ class SysDmailMaillogRepository extends MainRepository {
      */
     public function selectMostPopularLinksHtml(int $uid) //: array|bool 
     {
-        $queryBuilder = $this->getQueryBuilder($this->table);
-        
-        return $queryBuilder->count('*')
+        $popularLinksHtml = [];
+        $result = $this->getQueryBuilder($this->table)
+            ->count('*')
         ->addSelect('url_id')
         ->from($this->table)
         ->add('where', 'mid=' . intval($uid) .
             ' AND response_type = 1')
         ->groupBy('url_id')
         ->orderBy('COUNT(*)')
-        ->execute()
-        ->fetchAll();
+            ->executeQuery();
+
+        while ($row = $result->fetchAssociative()) {
+            $popularLinksHtml[$row['url_id']] = $row;
+        }
+
+        return $popularLinksHtml;
     }
     
     /**
@@ -166,17 +171,22 @@ class SysDmailMaillogRepository extends MainRepository {
      */
     public function selectMostPopularLinksPlain(int $uid) //: array|bool 
     {
-        $queryBuilder = $this->getQueryBuilder($this->table);
-        
-        return $queryBuilder->count('*')
+        $popularLinksPlain = [];
+        $result = $this->getQueryBuilder($this->table)
+            ->count('*')
         ->addSelect('url_id')
         ->from($this->table)
         ->add('where', 'mid=' . intval($uid) .
             ' AND response_type = 2')
         ->groupBy('url_id')
         ->orderBy('COUNT(*)')
-        ->execute()
-        ->fetchAll();
+            ->executeQuery();
+
+        while ($row = $result->fetchAssociative()) {
+            $popularLinksPlain[$row['url_id']] = $row;
+        }
+
+        return $popularLinksPlain;
     }
     
     /**
