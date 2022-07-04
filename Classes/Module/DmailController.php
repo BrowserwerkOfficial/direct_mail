@@ -1656,11 +1656,13 @@ class DmailController extends MainController
                         } elseif ($this->userTable && ($whichTables&4)) {
                             $table = $this->userTable;
                         }
-                        if ($table) {
-                            // initialize the query generator
-                            $queryGenerator = GeneralUtility::makeInstance(MailSelect::class);
-                            $idLists[$table] = DirectMailUtility::getSpecialQueryIdList($queryGenerator, $table, $mailGroup);
-                        }
+                        # Disabled due to Error in DirectMail:
+                        # Error: Class 'DirectMailTeam\DirectMail\Module\MailSelect' not found
+                        #if ($table) {
+                        #    // initialize the query generator
+                        #    $queryGenerator = GeneralUtility::makeInstance(MailSelect::class);
+                        #    $idLists[$table] = DirectMailUtility::getSpecialQueryIdList($queryGenerator, $table, $mailGroup);
+                        #}
                         break;
                     case 4:
                         $groups = array_unique(DirectMailUtility::getMailGroups($mailGroup['mail_groups'], [$mailGroup['uid']], $this->perms_clause));
