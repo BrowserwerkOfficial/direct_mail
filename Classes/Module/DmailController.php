@@ -1322,6 +1322,38 @@ class DmailController extends MainController
     }
 
     /**
+     * Send mail to recipient based on table.
+     *
+     * @param array $idLists List of recipient ID
+     * @param string $table Table name
+     * @param Dmailer $htmlmail Object of the dmailer script
+     *
+     * @return int Total of sent mail
+     * @todo: remove htmlmail. sending mails to table
+     */
+    protected function sendTestMailToTable(array $idLists, $table, Dmailer $htmlmail)
+    {
+        $sentFlag = 0;
+        if (is_array($idLists[$table])) {
+            if ($table != 'PLAINLIST') {
+                $recs = DirectMailUtility::fetchRecordsListValues($idLists[$table], $table, '*');
+            } else {
+                $recs = $idLists['PLAINLIST'];
+            }
+            foreach ($recs as $rec) {
+                $recipRow = $htmlmail->convertFields($rec);
+                $recipRow['sys_dmail_categories_list'] = $htmlmail->getListOfRecipentCategories($table, $recipRow['uid']);
+                $kc = substr($table, 0, 1);
+                $returnCode = $htmlmail->dmailer_sendAdvanced($recipRow, $kc=='p'?'P':$kc);
+                if ($returnCode) {
+                    $sentFlag++;
+                }
+            }
+        }
+        return $sentFlag;
+    }
+
+    /**
      * Show the recipient info and a link to edit it
      *
      * @param array $listArr List of recipients ID
