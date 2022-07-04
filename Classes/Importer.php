@@ -140,7 +140,7 @@ class Importer
             $stepCurrent = 'mapping';
         }
 
-        if (strlen($this->indata['csv'] ?? 0) > 0) {
+        if ((strlen($this->indata['csv']) ?? 0) > 0) {
             $this->indata['mode'] = 'csv';
             $this->indata['newFile'] = $this->writeTempFile();
         } elseif (!empty($this->indata['newFile'])) {
