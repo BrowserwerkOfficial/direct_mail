@@ -1088,7 +1088,7 @@ class DmailController extends MainController
                     [
                         'id' => $this->id,
                         'sys_dmail_uid' => $this->sys_dmail_uid,
-                        'CMD' => 'send_mail_test',
+                        'cmd' => 'send_mail_test',
                         'sys_dmail_group_uid[]' => $row['uid']
                     ]
                 );
