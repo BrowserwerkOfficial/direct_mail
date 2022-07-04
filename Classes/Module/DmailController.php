@@ -1383,11 +1383,16 @@ class DmailController extends MainController
                     }
                 }
 
+                $recipientName = '';
+                if (isset($row['name'])) {
+                    $recipientName = htmlspecialchars($row['name']);
+                }
+
                 $lines[] = '<tr class="db_list_normal">
 				' . $tableIcon . '
 				' . $editLink . '
 				<td nowrap> ' . $testLink . ' </td>
-				<td nowrap> ' . htmlspecialchars($row['name']) . ' </td>
+				<td nowrap> ' . $recipientName . ' </td>
 				</tr>';
             }
         }
