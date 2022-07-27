@@ -140,7 +140,7 @@ class Importer
             $stepCurrent = 'mapping';
         }
 
-        if (strlen($this->indata['csv'] ?? 0) > 0) {
+        if ((strlen($this->indata['csv']) ?? 0) > 0) {
             $this->indata['mode'] = 'csv';
             $this->indata['newFile'] = $this->writeTempFile();
         } elseif (!empty($this->indata['newFile'])) {
@@ -522,7 +522,7 @@ class Importer
                 $out = '<hr /><h3>' . $this->getLanguageService()->getLL('mailgroup_import_header_upload') . '</h3>';
                 $tempDir = $this->userTempFolder();
 
-                $tblLines[] = $this->getLanguageService()->getLL('mailgroup_import_upload_file') . '<input type="file" name="upload_1" size="30" />';
+                $tblLines[] = $this->getLanguageService()->getLL('mailgroup_import_upload_file') . '<br>' .'<input type="file" name="upload_1" size="30" />';
                 if (($this->indata['mode'] === 'file') && !(((strpos($currentFileInfo['file'], 'import') === false) ? 0 : 1) && ($currentFileInfo['realFileext'] === 'txt'))) {
                     $currentFileMessage = '';
                     $tblLines[] = $this->getLanguageService()->getLL('mailgroup_import_current_file') . '<b>' . $currentFileMessage . '</b>';

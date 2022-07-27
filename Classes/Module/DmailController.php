@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace DirectMailTeam\DirectMail\Module;
 
-use DirectMailTeam\DirectMail\Dmailer;
 use DirectMailTeam\DirectMail\DirectMailUtility;
+use DirectMailTeam\DirectMail\Dmailer;
 use DirectMailTeam\DirectMail\Repository\PagesRepository;
 use DirectMailTeam\DirectMail\Repository\SysDmailGroupRepository;
 use DirectMailTeam\DirectMail\Repository\SysDmailRepository;
@@ -12,21 +12,16 @@ use DirectMailTeam\DirectMail\Repository\TtAddressRepository;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Configuration\TranslationConfigurationProvider;
-use TYPO3\CMS\Backend\Routing\PreviewUriBuilder;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Imaging\Icon;
-use TYPO3\CMS\Core\Messaging\FlashMessage;
-use TYPO3\CMS\Core\Messaging\FlashMessageRendererResolver;
+use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
-use TYPO3\CMS\Fluid\View\StandaloneView;
 
 class DmailController extends MainController
 {
@@ -76,6 +71,8 @@ class DmailController extends MainController
 //     }
 
     protected function initDmail(ServerRequestInterface $request): void {
+        $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Backend/DateTimePicker');
+
         $queryParams = $request->getQueryParams();
         $parsedBody = $request->getParsedBody();
 
@@ -1088,7 +1085,7 @@ class DmailController extends MainController
                     [
                         'id' => $this->id,
                         'sys_dmail_uid' => $this->sys_dmail_uid,
-                        'CMD' => 'send_mail_test',
+                        'cmd' => 'send_mail_test',
                         'sys_dmail_group_uid[]' => $row['uid']
                     ]
                 );
@@ -1322,6 +1319,38 @@ class DmailController extends MainController
     }
 
     /**
+     * Send mail to recipient based on table.
+     *
+     * @param array $idLists List of recipient ID
+     * @param string $table Table name
+     * @param Dmailer $htmlmail Object of the dmailer script
+     *
+     * @return int Total of sent mail
+     * @todo: remove htmlmail. sending mails to table
+     */
+    protected function sendTestMailToTable(array $idLists, $table, Dmailer $htmlmail)
+    {
+        $sentFlag = 0;
+        if (is_array($idLists[$table])) {
+            if ($table != 'PLAINLIST') {
+                $recs = DirectMailUtility::fetchRecordsListValues($idLists[$table], $table, '*');
+            } else {
+                $recs = $idLists['PLAINLIST'];
+            }
+            foreach ($recs as $rec) {
+                $recipRow = $htmlmail->convertFields($rec);
+                $recipRow['sys_dmail_categories_list'] = $htmlmail->getListOfRecipentCategories($table, $recipRow['uid']);
+                $kc = substr($table, 0, 1);
+                $returnCode = $htmlmail->dmailer_sendAdvanced($recipRow, $kc=='p'?'P':$kc);
+                if ($returnCode) {
+                    $sentFlag++;
+                }
+            }
+        }
+        return $sentFlag;
+    }
+
+    /**
      * Show the recipient info and a link to edit it
      *
      * @param array $listArr List of recipients ID
@@ -1383,11 +1412,16 @@ class DmailController extends MainController
                     }
                 }
 
+                $recipientName = '';
+                if (isset($row['name'])) {
+                    $recipientName = htmlspecialchars($row['name']);
+                }
+
                 $lines[] = '<tr class="db_list_normal">
 				' . $tableIcon . '
 				' . $editLink . '
 				<td nowrap> ' . $testLink . ' </td>
-				<td nowrap> ' . htmlspecialchars($row['name']) . ' </td>
+				<td nowrap> ' . $recipientName . ' </td>
 				</tr>';
             }
         }
